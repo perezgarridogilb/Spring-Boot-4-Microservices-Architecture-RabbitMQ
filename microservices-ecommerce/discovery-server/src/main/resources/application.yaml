@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: discovery-server # Nombre con el que se identifica este servicio en el ecosistema de Spring
+server:
+  port: 8761 # Puerto por defecto y estándar que utiliza Netflix Eureka Server
+eureka:
+  client:
+    register-with-eureka: false # Evita que este servidor se registre a sí mismo como un cliente en el catálogo
+    fetch-registry: false # Evita que intente descargar la lista de microservicios, ya que él es la fuente principal
