@@ -2,6 +2,8 @@ package com.ecommerce.product_service.service.impl;
 
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.product_service.dto.ProductRequestDTO;
@@ -24,9 +26,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO createprodduct(ProductRequestDTO requestDTO) {
 
         Product product = mapper.toProduct(requestDTO);
-        repository.save(product);
+        Product savedProduct = repository.save(product);
 
-        return mapper.toProductResponseDTO(product);
+        return mapper.toProductResponseDTO(savedProduct);
     }
 
     @Override
@@ -59,8 +61,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteProduct'");
+
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Producto no encontrado con el id: " + id);
+        }
+
+        repository.deleteById(id);
+        ;
     }
 
 
