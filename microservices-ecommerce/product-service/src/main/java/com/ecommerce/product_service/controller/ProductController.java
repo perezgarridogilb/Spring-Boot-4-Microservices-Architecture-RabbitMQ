@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +30,7 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductResponseDTO createProduct(@RequestBody ProductRequestDTO productRequestDTO) {
+    public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
         return productService.createprodduct(productRequestDTO);
     }
 
@@ -51,7 +53,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductResponseDTO updateProduct(
         @PathVariable String id,
-        @RequestBody ProductRequestDTO productRequestDTO
+        @Valid @RequestBody ProductRequestDTO productRequestDTO
     ) {
         return productService.updateProduct(id, productRequestDTO);
     }

@@ -2,12 +2,11 @@ package com.ecommerce.product_service.service.impl;
 
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
-
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.product_service.dto.ProductRequestDTO;
 import com.ecommerce.product_service.dto.ProductResponseDTO;
+import com.ecommerce.product_service.exception.ResourceNotFoundException;
 import com.ecommerce.product_service.mapper.ProductMapper;
 import com.ecommerce.product_service.model.Product;
 import com.ecommerce.product_service.repository.ProductRepository;
@@ -42,15 +41,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO getProductById(String id) {
         Product product = repository.findById(id).orElseThrow(
-            () -> new RuntimeException("Producto no encontrado con el id: " + id)
+            () -> new ResourceNotFoundException("Product", "id", id)
         );
         return mapper.toProductResponseDTO(product);
     }
 
     @Override
     public ProductResponseDTO updateProduct(String id, ProductRequestDTO productRequest) {
-       Product product = repository.findById(id).orElseThrow(
-            () -> new RuntimeException("Producto no encontrado con el id: " + id)
+        Product product = repository.findById(id).orElseThrow(
+            () -> new ResourceNotFoundException("Product", "id", id)
         );
             //product.setName(productRequest.name());
 
@@ -63,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(String id) {
 
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Producto no encontrado con el id: " + id);
+            throw new ResourceNotFoundException("Product", "id", id);
         }
 
         repository.deleteById(id);
