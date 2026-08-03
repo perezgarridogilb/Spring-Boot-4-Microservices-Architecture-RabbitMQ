@@ -12,10 +12,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestControllerAdvice
+@Slf4j
 public class GlobalControllerAdvice {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+
+        log.warn("Recurso no encontrado - Path, Message: {}", 
+        request.getDescription(false), ex.getMessage());
+
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
 
         problemDetail.setTitle("Recurso no entontrado");
@@ -51,4 +58,26 @@ public class GlobalControllerAdvice {
 
         return problemDetail;
     }
+
+    @ExceptionHandler(Exception.class)
+public ProblemDetail handleException(Exception ex, WebRequest request){
+    
+    // log.error("Ha ocurrido un error inesperado. Por favor, contactar con el administrador, ex");
+
+    log.error("Recurso no encontrado - Path, Message: {}", 
+    request.getDescription(false), ex.getMessage(), ex);
+
+
+
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
+        "A ocurrido un error inesperado. Por favor, contactar con el administrador"
+    );
+
+    problemDetail.setTitle("Internal Server Error");
+    problemDetail.setType(URI.create("https://api.ecommerce.com/errors/internal"));
+    problemDetail.setProperty("Timestamp", Instant.now());
+
+    return problemDetail;
+
+}
 }
