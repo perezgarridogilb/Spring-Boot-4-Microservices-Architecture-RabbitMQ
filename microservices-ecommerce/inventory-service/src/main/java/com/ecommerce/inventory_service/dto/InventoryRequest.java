@@ -14,5 +14,5 @@ public class InventoryRequest {
     private String sku;
 
     @Min(value = 0, message = "La cantidad no puede ser negativa")
-    private Integer quanntity;
+    private Integer quantity;
 }

@@ -75,7 +75,7 @@ public class InventoryServiceImpl implements InventoryService {
             () -> new ResourceNotFoundException("inventory", "id", id)
         );
         inventory.setSku(inventoryRequest.getSku());
-        inventory.setQuantity(inventoryRequest.getQuanntity());
+        inventory.setQuantity(inventoryRequest.getQuantity());
         Inventory savedInventory = inventoryRepository.save(inventory);
         log.info("inventario actualizado para el ID: {}", id);
         return inventoryMapper.toResponse(savedInventory);
