@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional; // Usa preferen
 
 import com.ecommerce.inventory_service.dto.InventoryRequest;
 import com.ecommerce.inventory_service.dto.InventoryResponse;
+import com.ecommerce.inventory_service.exception.ResourceNotFoundException;
 import com.ecommerce.inventory_service.mapper.InventoryMapper;
 import com.ecommerce.inventory_service.model.Inventory;
 import com.ecommerce.inventory_service.repository.InventoryRepository;
@@ -39,19 +40,27 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public void deleteInventory(Long id) {
-        // TODO Auto-generated method stub
-        
+        if (!inventoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("inventario", "id", id);
+        }
+        inventoryRepository.deleteById(id);
+        log.info("inventario eliminado con ID: {}", id);
     }
 
-    @Override
-    public List<InventoryResponse> getAllInventory() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+
 
     @Override
     @Transactional(readOnly = true)
+    public List<InventoryResponse> getAllInventory() {
+        
+        return inventoryRepository.findAll().stream()
+        .map(inventoryMapper::toResponse)
+        .toList();
+    }
+
+    @Override
     public boolean isInStock(String sku, Integer quantity) {
         return inventoryRepository.findBySku(sku)
         .map(inventory -> inventory.getQuantity() >= quantity)
@@ -59,9 +68,16 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public InventoryResponse updateInventory(Long id, InventoryRequest inventoryRequest) {
-        Inventory inventory = inventoryMapper.toModel(inventoryRequest);
+        Inventory inventory = inventoryRepository.findById(id)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("inventory", "id", id)
+        );
+        inventory.setSku(inventoryRequest.getSku());
+        inventory.setQuantity(inventoryRequest.getQuanntity());
         Inventory savedInventory = inventoryRepository.save(inventory);
+        log.info("inventario actualizado para el ID: {}", id);
         return inventoryMapper.toResponse(savedInventory);
     }
 
