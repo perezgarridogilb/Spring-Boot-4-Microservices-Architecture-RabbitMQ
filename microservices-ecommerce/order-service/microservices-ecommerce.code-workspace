@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../product-service"
+		},
+		{
+			"path": "../inventory-service"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive",
+		"java.autobuild.enabled": false
+	}
+}
