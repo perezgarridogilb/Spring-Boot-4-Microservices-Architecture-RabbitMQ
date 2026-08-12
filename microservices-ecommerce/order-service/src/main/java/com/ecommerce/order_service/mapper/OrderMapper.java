@@ -24,7 +24,7 @@ public interface OrderMapper {
 
     // 2. De Entidad a Response
     // Mapeamos explícitamente la lista de vuelta
-    @Mapping(source = "orderLineItemsList", target = "orderLineItemsDtoList")
+    // @Mapping(source = "orderLineItemsList", target = "orderLineItemsDtoList")
     OrderResponse toOrderResponse(Order order);
 
     // Método auxiliar para la respuesta

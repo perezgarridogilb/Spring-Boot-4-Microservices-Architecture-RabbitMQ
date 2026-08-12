@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class OrderRequest {
     // private Long id;
     @NotEmpty(message = "La orden debe contar al menos un item")
-    @Valid
+    @Valid /** con este nombre viene la llave en el json */
     private List<OrderLineItemsRequest> orderLineItemsList/* orderLineItemsDtoList */;
 
 

@@ -6,7 +6,7 @@ import com.ecommerce.order_service.dto.OrderRequest;
 import com.ecommerce.order_service.dto.OrderResponse;
 
 public interface OrderService {
-    OrderResponse plaOrder(OrderRequest orderRequest);
+    OrderResponse placeOrder(OrderRequest orderRequest);
     List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(Long id);
     void deleteOrder(Long id);

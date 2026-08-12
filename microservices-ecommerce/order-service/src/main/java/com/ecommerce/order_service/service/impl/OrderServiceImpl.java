@@ -26,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponse plaOrder(OrderRequest orderRequest) {
+    public OrderResponse placeOrder(OrderRequest orderRequest) {
         Order order = orderMapper.toOrder(orderRequest);
         order.setOrderNumber(UUID.randomUUID().toString());
         Order savedOrder = orderRepository.save(order);
