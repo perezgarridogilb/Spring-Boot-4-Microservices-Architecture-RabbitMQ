@@ -46,6 +46,13 @@ return inventoryService.createInventory(inventoryRequest);
 return inventoryService.getAllInventory();
     }
 
+    @PutMapping("/reduce/{sku}")
+    @ResponseStatus(HttpStatus.OK)
+    public String reduceStock(@PathVariable String sku, @RequestParam Integer quantity) {
+        inventoryService.reduceStock(sku, quantity);
+
+        return "Stock reducido exitosamente";
+    }
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public InventoryResponse updateInventory(@PathVariable Long id, @Valid @RequestBody InventoryRequest inventoryRequest) {

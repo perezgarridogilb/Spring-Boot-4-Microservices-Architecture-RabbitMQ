@@ -81,4 +81,22 @@ public class InventoryServiceImpl implements InventoryService {
         return inventoryMapper.toResponse(savedInventory);
     }
 
+    @Override
+    @Transactional
+    public void reduceStock(String sku, Integer quantity) {
+        var inventory = inventoryRepository.findBySku(sku)
+        .orElseThrow(
+            () -> new RuntimeException(
+                "Producto no encontrado: " + sku
+            )
+        );
+
+        if (inventory.getQuantity() < quantity) {
+            throw new RuntimeException("Stock insuficiente para: " + sku);
+        }
+        inventory.setQuantity(inventory.getQuantity()-quantity);
+        inventoryRepository.save(inventory);
+    }
+
+    
 }
