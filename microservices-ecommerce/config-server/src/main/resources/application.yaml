@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: file:///Users/macbook/Desktop/Spring Boot/Spring-Boot-4-Microservices-Architecture-RabbitMQ/microservices-ecommerce/config-data
+          clone-on-start: true
+          default-label: master
+server:
+  port: 8888
