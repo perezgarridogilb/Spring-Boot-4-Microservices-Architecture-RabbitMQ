@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../config-server"
+		},
+		{
+			"path": "../config-data"
 		}
 	],
 	"settings": {
