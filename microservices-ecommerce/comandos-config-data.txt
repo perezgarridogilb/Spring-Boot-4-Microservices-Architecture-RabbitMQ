@@ -1,0 +1,30 @@
+# Config-data: git init (crea el repo; por eso "El repo git ya existe")
+
+cd "/Users/macbook/Desktop/Spring Boot/Spring-Boot-4-Microservices-Architecture-RabbitMQ/microservices-ecommerce/config-data"
+git init
+git config user.email "dev@local"
+git config user.name "dev"
+git config init.defaultBranch main
+
+# Verificar rama y estado ("El repo git ya existe")
+
+git branch --show-current
+git status --short
+
+# Verificar qué servicios consumen el config-server (búsqueda)
+
+# (grep en *.yaml, *.yml, *.properties por "config-server")
+# (grep en *.yaml, *.yml, *.pom.xml por "spring-cloud-starter-config|spring.config.import")
+
+# Archivos de configuración creados:
+#   order-service.yaml
+#   inventory-service.yaml
+
+# Commit
+
+git add -A
+git commit -m "Initial config for order-service and inventory-service"
+
+# Probar el config-server
+
+curl -s "http://localhost:8888/order-service/default" | head -40
