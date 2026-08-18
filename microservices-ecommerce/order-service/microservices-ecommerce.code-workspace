@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "../discovery-server"
+		},
+		{
+			"path": "../api-gateway"
 		}
 	],
 	"settings": {

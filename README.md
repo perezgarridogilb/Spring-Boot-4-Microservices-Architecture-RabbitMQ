@@ -73,3 +73,15 @@ Cada capa de este JSON corresponde a:
 ### Nota importante
 
 El `spring.config.import: configserver:...` va en el `application.yaml` **local del cliente** (en el module `inventory-service/src/main/resources/`), **no** en `config-data/inventory-service.yaml`. Si se pone dentro del archivo servido, el config-server reprocesa el import y se llama a sí mismo, causando un deadlock.
+
+### Levantar dos instancias sin chocar puertos
+
+Para lanzar otra instancia de inventory-service con un **puerto aleatorio** (y que no choque con la que usa el puerto fijo `8082` del config-server), se usó este comando desde la terminal:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=0"
+```
+
+- `-Dserver.port=0` → Spring asigna un puerto HTTP aleatorio en cada arranque.
+- Este flag **solo aplica para `./mvnw spring-boot:run`**; `launch.json` de VS Code (perfil "Random Port") solo se usa al debuggear con **F5**.
+- Nota: `-Dserver.port=0` como system property tiene prioridad sobre `server.port: 8082` que entrega el config-server.
