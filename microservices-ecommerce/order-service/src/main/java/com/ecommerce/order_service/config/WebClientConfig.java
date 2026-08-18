@@ -38,7 +38,10 @@ class AppServiceProvider extends ServiceProvider
 }
             return new HttpInventoryClient($pendingRequest);
 */    @Bean 
-    public InventoryClient inventoryClient(WebClient webClient) {
+    public InventoryClient inventoryClient(WebClient.Builder webClientBuilder) {
+        // Construye el WebClient a partir del builder configurado (Laravel: Http::baseUrl + acceptJson)
+        WebClient webClient = webClientBuilder.build();
+        
         // Adapta la instancia del cliente HTTP para ser usada por la fábrica proxy
         WebClientAdapter adapter = WebClientAdapter.create(webClient);
         
