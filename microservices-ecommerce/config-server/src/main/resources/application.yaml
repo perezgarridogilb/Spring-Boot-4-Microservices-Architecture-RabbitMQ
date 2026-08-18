@@ -5,7 +5,10 @@ spring:
     config:
       server:
         git:
-          uri: file:///Users/macbook/Desktop/Spring Boot/Spring-Boot-4-Microservices-Architecture-RabbitMQ/microservices-ecommerce/config-data
+          # uri: file:///Users/macbook/Desktop/Spring Boot/Spring-Boot-4-Microservices-Architecture-RabbitMQ/microservices-ecommerce/config-data
+          uri: https://github.com/perezgarridogilb/microservices-config-data.git
+          username: perezgarridogilb
+          password: ${GITHUB_TOKEN}
           clone-on-start: true
           default-label: master
 server:
