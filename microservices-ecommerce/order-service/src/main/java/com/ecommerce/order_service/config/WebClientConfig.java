@@ -13,10 +13,11 @@ import com.ecommerce.order_service.service.client.InventoryClient;
 public class WebClientConfig {
 
     // Configura la base del cliente HTTP (En Laravel: un PendingRequest configurado con Http::baseUrl)
-    @Bean 
+    @Bean
+    @org.springframework.cloud.client.loadbalancer.LoadBalanced
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder()
-        .baseUrl("http://localhost:8082"); // Laravel: Http::baseUrl('http://localhost:8082')
+        /* .baseUrl("http://localhost:8082") */; // Laravel: Http::baseUrl('http://localhost:8082')
     }
 
 
@@ -40,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
 */    @Bean 
     public InventoryClient inventoryClient(WebClient.Builder webClientBuilder) {
         // Construye el WebClient a partir del builder configurado (Laravel: Http::baseUrl + acceptJson)
-        WebClient webClient = webClientBuilder.build();
+        WebClient webClient = webClientBuilder.baseUrl("http://INVENTORY-SERVICE").build();
         
         // Adapta la instancia del cliente HTTP para ser usada por la fábrica proxy
         WebClientAdapter adapter = WebClientAdapter.create(webClient);
