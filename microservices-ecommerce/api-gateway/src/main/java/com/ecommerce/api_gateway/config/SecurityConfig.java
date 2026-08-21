@@ -1,9 +1,20 @@
 package com.ecommerce.api_gateway.config;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.ecommerce.api_gateway.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
@@ -94,12 +105,43 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity serverHttpSecurity) {
         serverHttpSecurity.csrf(
                 ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(authorizeEchangeSpec -> authorizeEchangeSpec.pathMatchers("eureka/**")
-                        .permitAll()
+                .authorizeExchange(authorizeEchangeSpec -> authorizeEchangeSpec
+                    .pathMatchers("eureka/**").permitAll()
+                    .pathMatchers("/api/product/**").permitAll()
+                    .pathMatchers("/api/inventory/**").permitAll()
+                    .pathMatchers("/api/product/**").hasRole(Role.ADMIN.name())
+                    .pathMatchers("/api/inventory/**").hasRole(Role.ADMIN.name())
+
+                    .pathMatchers("/api/v1/order/**").hasRole(Role.USER.name())
+                    .pathMatchers("/api/v1/order/**").hasRole(Role.ADMIN.name())
+
                         .anyExchange().authenticated()
-                    ).oauth2ResourceServer(oath2 -> oath2.jwt(jwtSpec -> {})
-                
+                    ).oauth2ResourceServer(oath2 -> oath2.jwt(jwt -> jwt
+                        .jwtAuthenticationConverter(reactiveJwtAuthenticationConverterAdapter()))
+
                 );
         return serverHttpSecurity.build();
+    }
+
+    private ReactiveJwtAuthenticationConverterAdapter reactiveJwtAuthenticationConverterAdapter(){
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+
+        converter.setJwtGrantedAuthoritiesConverter( jwt -> {
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            if (realmAccess == null || realmAccess.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            Collection<String> roles = (Collection<String>) realmAccess.get("roles");
+            // if (roles == null) {
+            //     return List.of();
+            // }
+
+            return roles.stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                    .collect(Collectors.toList());
+        });
+
+        return new ReactiveJwtAuthenticationConverterAdapter(converter);
     }
 }
