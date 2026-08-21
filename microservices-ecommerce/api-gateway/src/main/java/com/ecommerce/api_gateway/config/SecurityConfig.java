@@ -106,11 +106,11 @@ public class SecurityConfig {
         serverHttpSecurity.csrf(
                 ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(authorizeEchangeSpec -> authorizeEchangeSpec
-                    .pathMatchers("eureka/**").permitAll()
-                    .pathMatchers("/api/product/**").permitAll()
-                    .pathMatchers("/api/inventory/**").permitAll()
-                    .pathMatchers("/api/product/**").hasRole(Role.ADMIN.name())
-                    .pathMatchers("/api/inventory/**").hasRole(Role.ADMIN.name())
+                    .pathMatchers("/eureka/**").permitAll()
+                    .pathMatchers("/api/v1/product/**").permitAll()
+                    .pathMatchers("/api/v1/inventory/**").permitAll()
+                    .pathMatchers("/api/v1/product/**").hasRole(Role.ADMIN.name())
+                    .pathMatchers("/api/v1/inventory/**").hasRole(Role.ADMIN.name())
 
                     .pathMatchers("/api/v1/order/**").hasRole(Role.USER.name())
                     .pathMatchers("/api/v1/order/**").hasRole(Role.ADMIN.name())

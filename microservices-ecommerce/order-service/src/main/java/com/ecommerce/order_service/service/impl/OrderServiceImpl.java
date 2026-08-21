@@ -3,6 +3,7 @@ package com.ecommerce.order_service.service.impl;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.order_service.dto.OrderRequest;
@@ -30,12 +31,22 @@ public class OrderServiceImpl implements OrderService {
     private final WebClient.Builder webClientBuilder;
     private final InventoryClient inventoryClient;
 
+        @Value("${order.enabled:true}")
+    private boolean ordersEnabled;
+
     @Override
     @Transactional
-    public OrderResponse placeOrder(OrderRequest orderRequest) {
+    public OrderResponse placeOrder(OrderRequest orderRequest, String userId) {
+
+        if(!ordersEnabled){
+            log.warn("Pedido rechazado: Servicio deshabilitado por configuración.");
+            throw new RuntimeException("El servicio de pedidos está actualmente en mantenimiento. Intente más tarde");
+        }
 
         log.info("Colocando nuevo pedido");
         Order order = orderMapper.toOrder(orderRequest);
+
+        order.setUserId(userId);
 
         for (var item : order.getOrderLineItemsList()) {
             String sku = item.getSku();
@@ -69,14 +80,14 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toOrderResponse(savedOrder);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(orderMapper::toOrderResponse)
-                .toList();
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<OrderResponse> getAllOrders() {
+    //     return orderRepository.findAll().stream()
+    //             .map(orderMapper::toOrderResponse)
+    //             .toList();
 
-    }
+    // }
 
     @Override
     @Transactional(readOnly = true)
@@ -98,6 +109,23 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.deleteById(id);
         log.info("Orden eliminada. ID: {}", id);
         throw new UnsupportedOperationException("Unimplemented method 'deleteOrder'");
+    }
+
+    @Override
+        @Transactional(readOnly = true)
+
+    public List<OrderResponse> getOrders(String userId, boolean isAdmin) {
+        List<Order> orders;
+
+        if (isAdmin) {
+            orders = orderRepository.findAll();
+        } else {
+            orders = orderRepository.findByUserId(userId);
+
+        }
+        return orders.stream()
+        .map(orderMapper::toOrderResponse)
+        .toList();
     }
 
 }
