@@ -51,5 +51,13 @@ resilience4j:
         waitDurationInOpenState: 5s 
         permittedNumberOfCallsInHalfOpenState: 3
 
+  retry:
+    instances:
+      inventory:
+        maxAttempts: 3
+        waitDuration: 2s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
 server:
   port: 8081

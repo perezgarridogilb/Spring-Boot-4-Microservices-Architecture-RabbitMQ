@@ -17,6 +17,7 @@ import com.ecommerce.order_service.service.OrderService;
 import com.ecommerce.order_service.service.client.InventoryClient;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -38,14 +39,15 @@ public class OrderServiceImpl implements OrderService {
     private boolean ordersEnabled;
 
     public OrderResponse fallbackMethod(OrderRequest orderRequest, String userId, Throwable throwable) {
-        log.error("Circuit Breaker activado. Causa {}", throwable.getMessage());
-
-        return new OrderResponse(0L,"00000",Collections.emptyList() );
+        log.error("🔴 Circuit Breaker activado. Causa {}", throwable.getMessage());
+        throw new RuntimeException("El servicio de inventario no responde. Intente mas tarde");
+        // return new OrderResponse(0L,"00000",Collections.emptyList() );
     }
 
     @Override
     @Transactional
     @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
+    @Retry(name = "inventory")
     public OrderResponse placeOrder(OrderRequest orderRequest, String userId) {
 
         if(!ordersEnabled){
