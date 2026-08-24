@@ -1,5 +1,6 @@
 package com.ecommerce.order_service.service.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +15,8 @@ import com.ecommerce.order_service.model.Order;
 import com.ecommerce.order_service.repository.OrderRepository;
 import com.ecommerce.order_service.service.OrderService;
 import com.ecommerce.order_service.service.client.InventoryClient;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -34,8 +37,15 @@ public class OrderServiceImpl implements OrderService {
         @Value("${order.enabled:true}")
     private boolean ordersEnabled;
 
+    public OrderResponse fallbackMethod(OrderRequest orderRequest, String userId, Throwable throwable) {
+        log.error("Circuit Breaker activado. Causa {}", throwable.getMessage());
+
+        return new OrderResponse(0L,"00000",Collections.emptyList() );
+    }
+
     @Override
     @Transactional
+    @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
     public OrderResponse placeOrder(OrderRequest orderRequest, String userId) {
 
         if(!ordersEnabled){
