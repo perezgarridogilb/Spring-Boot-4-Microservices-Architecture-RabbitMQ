@@ -2,7 +2,6 @@ package com.ecommerce.order_service.controller;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,7 +30,7 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CompletableFuture<OrderResponse>  placeOrder(
+    public OrderResponse  placeOrder(
         @Valid @RequestBody OrderRequest orderRequest,
         @AuthenticationPrincipal Jwt jwt
     ) {

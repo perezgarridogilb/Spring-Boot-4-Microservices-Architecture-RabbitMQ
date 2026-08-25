@@ -59,11 +59,7 @@ resilience4j:
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
 
-timeLimiter:
-  instances:
-    inventory:
-      timeoutDuration: 3s
-      cancelRunningFuture: true
+
 
 server:
   port: 8081
