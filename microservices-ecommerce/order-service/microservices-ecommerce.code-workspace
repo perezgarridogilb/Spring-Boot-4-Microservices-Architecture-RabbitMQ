@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "../api-gateway"
+		},
+		{
+			"path": "../notification-service"
 		}
 	],
 	"settings": {
