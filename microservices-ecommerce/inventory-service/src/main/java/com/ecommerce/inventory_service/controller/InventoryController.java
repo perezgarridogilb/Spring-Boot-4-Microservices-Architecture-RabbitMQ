@@ -44,13 +44,21 @@ return inventoryService.createInventory(inventoryRequest);
         @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<InventoryResponse> getAllInventory(HttpServletRequest request) {
-        System.out.println("Petición atendida desde el puerto: " +request.getServerPort() );
+        System.out.println("✅ Petición atendida desde el puerto: " +request.getServerPort() );
 return inventoryService.getAllInventory();
     }
 
     @PutMapping("/reduce/{sku}")
     @ResponseStatus(HttpStatus.OK)
     public String reduceStock(@PathVariable String sku, @RequestParam Integer quantity) {
+
+        try {
+            System.out.println("🟡 Inventory se durmió por 5 segundos");
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         inventoryService.reduceStock(sku, quantity);
 
         return "Stock reducido exitosamente";

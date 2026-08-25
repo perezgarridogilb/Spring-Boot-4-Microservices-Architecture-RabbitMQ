@@ -3,6 +3,7 @@ package com.ecommerce.order_service.service.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import com.ecommerce.order_service.service.client.InventoryClient;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -38,9 +40,12 @@ public class OrderServiceImpl implements OrderService {
         @Value("${order.enabled:true}")
     private boolean ordersEnabled;
 
-    public OrderResponse fallbackMethod(OrderRequest orderRequest, String userId, Throwable throwable) {
+    public CompletableFuture<OrderResponse> fallbackMethod(OrderRequest orderRequest, String userId, Throwable throwable) {
+
+return CompletableFuture.supplyAsync(() -> {
         log.error("🔴 Circuit Breaker activado. Causa {}", throwable.getMessage());
         throw new RuntimeException("El servicio de inventario no responde. Intente mas tarde");
+});
         // return new OrderResponse(0L,"00000",Collections.emptyList() );
     }
 
@@ -48,9 +53,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
     @Retry(name = "inventory")
-    public OrderResponse placeOrder(OrderRequest orderRequest, String userId) {
+    @TimeLimiter(name = "inventory")
+    public CompletableFuture<OrderResponse> placeOrder(OrderRequest orderRequest, String userId) {
 
-        if(!ordersEnabled){
+        
+        // return orderMapper.toOrderResponse(savedOrder);
+        return CompletableFuture.supplyAsync(() -> {
+    long startTime = System.currentTimeMillis();
+                    if(!ordersEnabled){
             log.warn("Pedido rechazado: Servicio deshabilitado por configuración.");
             throw new RuntimeException("El servicio de pedidos está actualmente en mantenimiento. Intente más tarde");
         }
@@ -85,11 +95,19 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setOrderNumber(UUID.randomUUID().toString());
+
+        long totalTime = System.currentTimeMillis() - startTime;
+
+        if (totalTime> 3000) {
+            log.warn("⌛️ Timeout detectado internamente ({} ms). Abortando guardado en BD", totalTime);
+            throw new RuntimeException("Timeout excedido - rollback manual");
+        }
+
         Order savedOrder = orderRepository.save(order);
 
         log.info("Orden guardada con éxito. ID: {}", savedOrder.getId());
-
         return orderMapper.toOrderResponse(savedOrder);
+        }); 
     }
 
     // @Override
