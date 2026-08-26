@@ -106,6 +106,27 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("Orden guardada con éxito. ID: {}", savedOrder.getId());
 
+
+        /**
+         * 
+         
+// 1. Mapeo del arreglo de items de la orden
+$orderItems = collect($order->orderLineItemsList)->map(function ($item) {
+    return [
+        'sku'      => $item->sku,
+        'price'    => (string) $item->price,
+        'quantity' => $item->quantity,
+    ];
+})->all();
+
+// 2. Creación del objeto de Evento
+$event = new OrderPlacedEvent(
+    orderNumber: $savedOrder->order_number,
+    email:       $orderRequest->email,
+    orderItems:  $orderItems
+);
+         */
+
         List<OrderPlacedEvent.OrderItemEvent> orderItems =
         order.getOrderLineItemsList().stream()
         .map(

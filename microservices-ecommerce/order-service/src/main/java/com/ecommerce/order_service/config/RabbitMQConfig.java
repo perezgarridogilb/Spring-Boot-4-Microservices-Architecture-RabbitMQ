@@ -9,13 +9,18 @@ import org.springframework.amqp.support.converter.MessageConverter;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String EXCHANGE_NAME = "order-events"
+    public static final String EXCHANGE_NAME = "order-events";
 
     @Bean
     public MessageConverter messageConverter() {
         return new JacksonJsonMessageConverter();
     }
 
+    /**
+     * Se encarga de crearlo, si no existe lo crea
+     * 
+     * @return
+     */
     @Bean
     public TopicExchange orderEventsExchange() {
         return new TopicExchange(EXCHANGE_NAME);
