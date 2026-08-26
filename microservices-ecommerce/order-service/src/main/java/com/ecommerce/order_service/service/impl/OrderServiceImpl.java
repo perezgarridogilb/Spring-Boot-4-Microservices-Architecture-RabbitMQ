@@ -3,11 +3,13 @@ package com.ecommerce.order_service.service.impl;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.order_service.dto.OrderRequest;
 import com.ecommerce.order_service.dto.OrderResponse;
+import com.ecommerce.order_service.event.OrderPlacedEvent;
 import com.ecommerce.order_service.exception.ResourceNotFoundException;
 import com.ecommerce.order_service.mapper.OrderMapper;
 import com.ecommerce.order_service.model.Order;
@@ -32,7 +34,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final WebClient.Builder webClientBuilder;
-    private final InventoryClient inventoryClient;
+    // private final InventoryClient inventoryClient;
+    private final RabbitTemplate rabbitTemplate;
 
         @Value("${order.enabled:true}")
     private boolean ordersEnabled;
@@ -48,8 +51,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
-    @Retry(name = "inventory")
+    // @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
+    // @Retry(name = "inventory")
     public OrderResponse placeOrder(OrderRequest orderRequest, String userId) {
 
         
@@ -66,29 +69,29 @@ public class OrderServiceImpl implements OrderService {
 
         order.setUserId(userId);
 
-        for (var item : order.getOrderLineItemsList()) {
-            String sku = item.getSku();
-            Integer quantity = item.getQuantity();
+        // for (var item : order.getOrderLineItemsList()) {
+        //     String sku = item.getSku();
+        //     Integer quantity = item.getQuantity();
 
-            try {
-                // Boolean inStock = webClientBuilder.build().put()
-                //         .uri("http://localhost:8082/api/v1/inventory/reduce/" + sku,
-                //                 uriBuilder -> uriBuilder.queryParam("quantity", quantity).build())
-                //         .retrieve()
-                //         .bodyToMono(Boolean.class)
-                //         .block();
-                inventoryClient.reduceStock(sku, quantity);
-            } catch (Exception e) {
-                log.error("Error al reducir stock para el producto {}: {}", sku, e.getMessage());
-                throw new IllegalArgumentException(
-                        "No se pudo procesar la orden: Stock insuficiente o " + "error de inventario");
-            }
+        //     try {
+        //         // Boolean inStock = webClientBuilder.build().put()
+        //         //         .uri("http://localhost:8082/api/v1/inventory/reduce/" + sku,
+        //         //                 uriBuilder -> uriBuilder.queryParam("quantity", quantity).build())
+        //         //         .retrieve()
+        //         //         .bodyToMono(Boolean.class)
+        //         //         .block();
+        //         inventoryClient.reduceStock(sku, quantity);
+        //     } catch (Exception e) {
+        //         log.error("Error al reducir stock para el producto {}: {}", sku, e.getMessage());
+        //         throw new IllegalArgumentException(
+        //                 "No se pudo procesar la orden: Stock insuficiente o " + "error de inventario");
+        //     }
 
-            // if (!Boolean.TRUE.equals(inStock)) {
-            // throw new IllegalArgumentException("No hay stock disponible para el producto:
-            // " + sku);
-            // }
-        }
+        //     // if (!Boolean.TRUE.equals(inStock)) {
+        //     // throw new IllegalArgumentException("No hay stock disponible para el producto:
+        //     // " + sku);
+        //     // }
+        // }
 
         order.setOrderNumber(UUID.randomUUID().toString());
 
@@ -102,6 +105,22 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         log.info("Orden guardada con éxito. ID: {}", savedOrder.getId());
+
+        List<OrderPlacedEvent.OrderItemEvent> orderItems =
+        order.getOrderLineItemsList().stream()
+        .map(
+            item -> new OrderPlacedEvent.OrderItemEvent(
+                item.getSku(), item.getPrice().toString(), item.getQuantity()
+            )
+        ).toList();
+
+        OrderPlacedEvent event = new OrderPlacedEvent(
+            savedOrder.getOrderNumber(), orderRequest.getEmail(), orderItems
+        );
+
+        rabbitTemplate.convertAndSend("order-events", "order.placed", event);
+        log.info("Evento enviado a RabbitMQ para la orden: {}", savedOrder.getOrderNumber());
+
         return orderMapper.toOrderResponse(savedOrder);
         // }); 
     }
