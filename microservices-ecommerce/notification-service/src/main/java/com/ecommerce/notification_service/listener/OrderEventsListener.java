@@ -1,10 +1,11 @@
 package com.ecommerce.notification_service.listener;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import com.ecommerce.notification_service.event.OrderPlacedEvent;
-
+import org.springframework.mail.javamail.JavaMailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,26 +14,36 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderEventsListener {
 
+    private final JavaMailSender mailSender;
 
  @RabbitListener(queues = "notification-queue")   
  public void handleOrderPlacedEvent(OrderPlacedEvent event) {
 
-    log.info("Evento recibido en inventario para orden {}", event.orderNumber());
+    log.info("Evento recibido para orden {}", event.orderNumber());
 
-    event.items().forEach(item -> {
+    try {
+        StringBuilder body = new StringBuilder();
+        body.append("Hola!\n\n");
+        body.append("Tu pedido número ").append(event.orderNumber()).append(" ha sido recibido:\n\n");
 
-        try {
-            log.info(" Enviando correo de confirmación a: {}", event.email())
-            ;
+        event.items().forEach(item ->
+            body.append("- ").append(item.sku()).append(" x").append(item.quantity()).append("\n")
+        );
 
-            log.info("✅ Correo enviado exitosamente para la orden: {}", item.sku(), item.quantity());
+        body.append("\nPronto recibirás más noticias sobre el envío.\n\n");
+        body.append("Gracias por comprar con nosotros!");
 
-            log.info("");
-        } catch (Exception e) {
-            log.error("Error al descontar stock para SKU {}: {}", item.sku(), e.getMessage());
-        }
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("pedidos@ecommerce.com");
+        message.setTo(event.email());
+        message.setSubject("Orden confirmada - " + event.orderNumber());
+        message.setText(body.toString());
 
-    });
+        mailSender.send(message);
+        log.info("✅ Correo enviado a {} para la orden {}", event.email(), event.orderNumber());
+    } catch (Exception e) {
+        log.error("❌ Error al enviar correo: {}", e.getMessage());
+    }
  }
 
 }
