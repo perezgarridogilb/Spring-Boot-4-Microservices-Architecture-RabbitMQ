@@ -13,6 +13,7 @@ import com.ecommerce.order_service.event.OrderPlacedEvent;
 import com.ecommerce.order_service.exception.ResourceNotFoundException;
 import com.ecommerce.order_service.mapper.OrderMapper;
 import com.ecommerce.order_service.model.Order;
+import com.ecommerce.order_service.model.OrderStatus;
 import com.ecommerce.order_service.repository.OrderRepository;
 import com.ecommerce.order_service.service.OrderService;
 import com.ecommerce.order_service.service.client.InventoryClient;
@@ -94,6 +95,7 @@ public class OrderServiceImpl implements OrderService {
         // }
 
         order.setOrderNumber(UUID.randomUUID().toString());
+        order.setStatus(OrderStatus.PLACED);
 
         // long totalTime = System.currentTimeMillis() - startTime;
 
