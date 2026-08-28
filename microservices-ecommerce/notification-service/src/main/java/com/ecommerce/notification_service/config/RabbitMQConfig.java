@@ -44,10 +44,12 @@ public class RabbitMQConfig {
     /**
      * es el contrato que conecta el exchange con la cola
      * 
-     * si llega algo con la etiqueta order.placed envía algo a la cola notification-queue
+     * si llega algo con la etiqueta order.confirmed envía algo a la cola notification-queue
      */
     @Bean
     public Binding binding(Queue notificationQueue, TopicExchange orderEventsExchange) {
-        return BindingBuilder.bind(notificationQueue).to(orderEventsExchange).with("order.placed");
+        return BindingBuilder.bind(notificationQueue).to(orderEventsExchange).with("order.confirmed");
     }
+
+
 }

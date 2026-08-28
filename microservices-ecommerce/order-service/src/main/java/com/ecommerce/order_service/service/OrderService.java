@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.ecommerce.order_service.dto.OrderRequest;
 import com.ecommerce.order_service.dto.OrderResponse;
+import com.ecommerce.order_service.model.OrderStatus;
 
 public interface OrderService {
     OrderResponse placeOrder(OrderRequest orderRequest, String userId);
@@ -12,4 +13,5 @@ public interface OrderService {
     List<OrderResponse> getOrders(String userId, boolean isAdmin); // Read All x userId
     OrderResponse getOrderById(Long id);
     void deleteOrder(Long id);
+    void updateOrderStatus(String orderNumber, OrderStatus newStatus);
 }

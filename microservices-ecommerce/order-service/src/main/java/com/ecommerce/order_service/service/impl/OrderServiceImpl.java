@@ -196,4 +196,16 @@ $event = new OrderPlacedEvent(
         .toList();
     }
 
+    @Override
+    @Transactional
+    public void updateOrderStatus(String orderNumber, OrderStatus newStatus) {
+        Order order = orderRepository.findAll().stream()
+                .filter(o -> o.getOrderNumber().equals(orderNumber))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderNumber", orderNumber));
+        order.setStatus(newStatus);
+        orderRepository.save(order);
+        log.info("Order {} status updated to {}", orderNumber, newStatus);
+    }
+
 }

@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderEventsListener {
 
     private final JavaMailSender mailSender;
-
+// ocurre después de band order.confirmed desde rabbitmq
  @RabbitListener(queues = "notification-queue")   
- public void handleOrderPlacedEvent(OrderPlacedEvent event) {
+ public void handleOrderConfirmedEvent(OrderPlacedEvent event) {
 
     log.info("Evento recibido para orden {}", event.orderNumber());
 
