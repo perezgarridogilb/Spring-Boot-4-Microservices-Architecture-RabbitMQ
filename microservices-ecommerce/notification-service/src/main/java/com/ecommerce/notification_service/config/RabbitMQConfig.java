@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -53,15 +55,18 @@ public class RabbitMQConfig {
 
         return converter;
     }
-    /**
-     * se encarga de crear la cola (es el buzón)
-     * es donde se almacenan los mensajes esperando ser leídos
-     * 
-     * @return
+/**
+     * Crea la cola principal de notificaciones (el buzón).
+     * Configura el reenvío hacia el 'notification-dlx' cuando un mensaje falla 
+     * o se agotan los reintentos locales.
+     * @return Queue
      */
     @Bean
     public Queue notificationQueue() {
-        return new Queue("notification-queue", true);
+        return QueueBuilder.durable("notification-queue")
+        .withArgument("x-dead-letter-exchange", "notification-dlx")
+        .withArgument("x-dead-letter-routing-key", "notification.dead")
+        .build();
     }
 
     /**
@@ -71,6 +76,25 @@ public class RabbitMQConfig {
     @Bean
     public TopicExchange orderEventsExchange() {
         return new TopicExchange("order-events");
+    }
+
+    /**
+     * Un mensaje falla en notification-queue y RabbitMQ lo manda a notification-dlq mediante el notification-dlx
+     * @return
+     */
+       @Bean
+    public DirectExchange deadLetterExchange() {
+        return new DirectExchange("notification-dlx");
+    } 
+    
+    @Bean
+    public Queue deadLetterQueue() {
+        return new Queue("notification-dlq", true);
+    } 
+
+        @Bean
+    public Binding deadLetterBinding(Queue deadLetterQueue, DirectExchange deadLetterExchange) {
+        return BindingBuilder.bind(deadLetterQueue).to(deadLetterExchange).with("notification.dead");
     }
 
     /**
