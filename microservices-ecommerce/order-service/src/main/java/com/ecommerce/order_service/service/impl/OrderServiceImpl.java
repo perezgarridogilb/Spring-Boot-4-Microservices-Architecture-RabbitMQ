@@ -16,6 +16,7 @@ import com.ecommerce.order_service.model.Order;
 import com.ecommerce.order_service.model.OrderStatus;
 import com.ecommerce.order_service.repository.OrderRepository;
 import com.ecommerce.order_service.service.OrderService;
+import com.ecommerce.order_service.service.OutboxService;
 import com.ecommerce.order_service.service.client.InventoryClient;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -37,6 +38,8 @@ public class OrderServiceImpl implements OrderService {
     private final WebClient.Builder webClientBuilder;
     // private final InventoryClient inventoryClient;
     private final RabbitTemplate rabbitTemplate;
+        private final OutboxService outboxService;
+
 
         @Value("${order.enabled:true}")
     private boolean ordersEnabled;
@@ -141,7 +144,15 @@ $event = new OrderPlacedEvent(
             savedOrder.getOrderNumber(), orderRequest.getEmail(), orderItems
         );
 
-        rabbitTemplate.convertAndSend("order-events", "order.placed", event);
+        boolean sentToRabbit = false;
+        try {
+            
+            rabbitTemplate.convertAndSend("order-events", "order.placed", event);
+          sentToRabbit = true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        outboxService.saveOrderPlacedEvent(event, sentToRabbit);
         log.info("Evento enviado a RabbitMQ para la orden: {}", savedOrder.getOrderNumber());
 
         return orderMapper.toOrderResponse(savedOrder);

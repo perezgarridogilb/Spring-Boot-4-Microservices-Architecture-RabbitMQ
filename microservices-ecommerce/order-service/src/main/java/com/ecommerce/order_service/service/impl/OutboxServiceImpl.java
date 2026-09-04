@@ -1,6 +1,7 @@
 package com.ecommerce.order_service.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.management.RuntimeErrorException;
 
@@ -24,7 +25,7 @@ public class OutboxServiceImpl implements OutboxService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void saveOrderPlacedEvent(OrderPlacedEvent event) {
+    public void saveOrderPlacedEvent(OrderPlacedEvent event, boolean isProcessed) {
         try {
             // Equivalente a objectMapper.writeValueAsString(event)
             // $payload = json_encode($event);
@@ -37,7 +38,7 @@ public class OutboxServiceImpl implements OutboxService {
                     .type("ORDER_PLACED")
                     .payload(payload)
                     .createdAt(LocalDateTime.now())
-                    .processed(false)
+                    .processed(isProcessed)
                     .build();
 
             outboxRepository.save(outboxEvent);
@@ -45,6 +46,21 @@ public class OutboxServiceImpl implements OutboxService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<OutboxEvent> getPendingEvents() {
+        return outboxRepository.findByProcessedFalse();
+    }
+
+    @Override
+    public void MarkAsProcessed(Long id) {
+        outboxRepository.findById(id).ifPresent(
+            event ->{
+            event.setProcessed(true);
+            outboxRepository.save(event);
+            log.info("✅ Evento {} marcado como procesado", id);
+        });
     }
 
 }
