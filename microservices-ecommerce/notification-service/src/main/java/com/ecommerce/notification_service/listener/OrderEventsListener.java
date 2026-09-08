@@ -24,20 +24,20 @@ public class OrderEventsListener {
     public void handleOrderConfirmedEvent(OrderConfirmedEvent event) {
 
         log.info("🔔 Pedido confirmado para Orden: {}", event.orderNumber());
-throw new RuntimeException("Error simulado: Servidor SMTP fuera de línea");
-// //        throw new RuntimeException("Error SMTP");
+// throw new RuntimeException("Error simulado: Servidor SMTP fuera de línea");
+//        throw new RuntimeException("Error SMTP");
 
-//         SimpleMailMessage message = new SimpleMailMessage();
-//         message.setFrom("pedidos@ecommerce.com");
-//         message.setTo(event.email());
-//         message.setSubject("Orden Confirmada - " + event.orderNumber());
-//         message.setText("Hola!\n\n" +
-//                 "Tu pedido con número " + event.orderNumber() + " ha sido recibido exitosamente.\n" +
-//                 "Pronto recibirás más noticias sobre el envío.\n\n" +
-//                 "Gracias por comprar con nosotros!");
-//         mailSender.send(message);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("pedidos@ecommerce.com");
+        message.setTo(event.email());
+        message.setSubject("Orden Confirmada - " + event.orderNumber());
+        message.setText("Hola!\n\n" +
+                "Tu pedido con número " + event.orderNumber() + " ha sido recibido exitosamente.\n" +
+                "Pronto recibirás más noticias sobre el envío.\n\n" +
+                "Gracias por comprar con nosotros!");
+        mailSender.send(message);
 
-        // log.info("✅ Correo enviado exitosamente a: {}", event.email());
+        log.info("✅ Correo enviado exitosamente a: {}", event.email());
 
     }
 

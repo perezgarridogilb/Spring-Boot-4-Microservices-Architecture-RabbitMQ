@@ -5,6 +5,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 import com.ecommerce.inventory_service.event.OrderCancelledEvent;
+import com.ecommerce.inventory_service.event.OrderConfirmedEvent;
 import com.ecommerce.inventory_service.event.OrderPlacedEvent;
 import com.ecommerce.inventory_service.service.InventoryService;
 
@@ -39,12 +40,17 @@ public class OrderEventsListener {
             event.items().forEach(item -> {
                 inventoryService.reduceStock(item.sku(), item.quantity());
             });
+            /** separando placed de lo confirmado
+             * saber cuándo su trabajo terminó y romper el círculo
+             */
+            OrderConfirmedEvent confirmedEvent = new  OrderConfirmedEvent(
+                event.orderNumber(), event.email());
             /**
              match con order.confirmed → enruta el mensaje a order-confirmed-queue. <- esto creó el canal de comunicación
              convertAndSend → coloca/envía los datos a order-confirmed-queue.
              */
             // Lo que llena la cola en /Users/macbook/Desktop/Spring Boot/Spring-Boot-4-Microservices-Architecture-RabbitMQ/microservices-ecommerce/order-service/src/main/java/com/ecommerce/order_service/listener/OrderEventsListener.java:21
-            rabbitTemplate.convertAndSend("order-events", "order.confirmed", event);
+            rabbitTemplate.convertAndSend("order-events", "order.confirmed", confirmedEvent);
 
             // inventoryService.reduceStock(item.sku(), item.quantity());
             log.info("Stock descontado para Orden número {}", event.orderNumber());
