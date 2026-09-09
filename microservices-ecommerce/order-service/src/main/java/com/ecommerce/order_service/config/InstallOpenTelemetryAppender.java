@@ -1,0 +1,23 @@
+package com.ecommerce.order_service.config;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
+/**
+ * InitializingBean es una interfaz que permite ejecutar lógica de inicialización personalizada en un bean justo después de 
+ * que el contenedor de Spring ha establecido todas sus propiedades y dependencias
+ * InstallOpenTelemetryAppender
+ */
+@Component
+class InstallOpenTelemetryAppender implements InitializingBean {
+    private final OpenTelemetry openTelemetry;
+
+    InstallOpenTelemetryAppender(OpenTelemetry openTelemetry) {
+        this.openTelemetry = openTelemetry;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        OpenTelemetryAppender.install(this.openTelemetry);
+    }
+}
